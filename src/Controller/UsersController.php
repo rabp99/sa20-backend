@@ -2,6 +2,10 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Cake\Utility\Hash;
+use Cake\Network\Exception\UnauthorizedException;
+use Cake\Utility\Security;
+use Firebase\JWT\JWT;
 
 /**
  * Users Controller
@@ -12,23 +16,19 @@ use App\Controller\AppController;
  */
 class UsersController extends AppController
 {
-
-    /**
-     * Index method
-     *
-     * @return \Cake\Http\Response|void
-     */
-    public function index()
-    {
-        $this->paginate = [
-            'contain' => ['Estados']
-        ];
-        $users = $this->paginate($this->Users);
-
+    public function initialize() {
+        parent::initialize();
+        $this->Auth->allow(['token']);
+    }
+    
+    public function getAdmin() {        
+        $users = $this->Users->find()
+            ->contain(['Roles']);
+                
         $this->set(compact('users'));
         $this->set('_serialize', ['users']);
     }
-
+    
     /**
      * View method
      *
@@ -36,13 +36,10 @@ class UsersController extends AppController
      * @return \Cake\Http\Response|void
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function view($id = null)
-    {
-        $user = $this->Users->get($id, [
-            'contain' => ['Estados']
-        ]);
+    public function view($id = null) {
+        $user = $this->Users->get($id);
 
-        $this->set('user', $user);
+        $this->set(compact('user'));
         $this->set('_serialize', ['user']);
     }
 
@@ -51,21 +48,20 @@ class UsersController extends AppController
      *
      * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
      */
-    public function add()
-    {
+    public function add() {
         $user = $this->Users->newEntity();
+        
         if ($this->request->is('post')) {
             $user = $this->Users->patchEntity($user, $this->request->getData());
             if ($this->Users->save($user)) {
-                $this->Flash->success(__('The user has been saved.'));
-
-                return $this->redirect(['action' => 'index']);
+                $code = 200;
+                $message = 'El usuario fue guardado correctamente';
+            } else {
+                $message = 'El usuario no fue guardado correctamente';
             }
-            $this->Flash->error(__('The user could not be saved. Please, try again.'));
         }
-        $estados = $this->Users->Estados->find('list', ['limit' => 200]);
-        $this->set(compact('user', 'estados'));
-        $this->set('_serialize', ['user']);
+        $this->set(compact('user', 'message', 'code'));
+        $this->set('_serialize', ['user', 'message', 'code']);
     }
 
     /**
@@ -112,5 +108,23 @@ class UsersController extends AppController
         }
 
         return $this->redirect(['action' => 'index']);
+    }
+    
+    public function token() {
+        $user = $this->Auth->identify();
+        if (!$user) {
+            throw new UnauthorizedException('Invalid username or password');
+        }
+        $user = $this->Users->get($user['id'], ['contain' => ['Roles.ControllerRoles.Controllers']]);
+        $this->set([
+            'success' => true,
+            'user' => $user,
+            'token' => JWT::encode([
+                'sub' => $user['id'],
+                'exp' =>  time() + 604800
+            ],
+            Security::salt()),
+            '_serialize' => ['success', 'user', 'token']
+        ]);
     }
 }

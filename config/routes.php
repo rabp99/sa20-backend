@@ -72,13 +72,47 @@ Router::scope('/', function (RouteBuilder $routes) {
      * You can remove these routes once you've connected the
      * routes you want in your application.
      */
-    $routes->fallbacks(DashedRoute::class);
+    $routes->fallbacks('DashedRoute');
 });
 
 Router::scope('/', function ($routes) {
     $routes->extensions(['json']);
-    $routes->resources('Infos');
-    $routes->resources('Users');
+    $routes->resources('Infos', [
+        'map' => [
+            'saveMany' => [
+                'action' => 'saveMany',
+                'method' => 'POST'
+            ],
+            'getData/:data' => [
+                'action' => 'getData',
+                'method' => 'GET'
+            ],
+            'getDataMany' => [
+                'action' => 'getDataMany',
+                'method' => 'POST'
+            ],
+            'getDataByData' => [
+                'action' => 'getDataByData',
+                'method' => 'POST'
+            ],
+            'upload' => [
+                'action' => 'upload',
+                'method' => 'POST'
+            ]
+        ]
+    ]);
+    $routes->resources('Users', [
+        'map' => [
+            'getAdmin' => [
+                'action' => 'getAdmin',
+                'method' => 'GET'
+            ],
+            'token' => [
+                'action' => 'token',
+                'method' => 'POST'
+            ]
+        ]
+    ]);
 });
 /**
  * Load all plugin routes. See the Plugin documentation on
