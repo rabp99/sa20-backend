@@ -18,7 +18,7 @@ class UsersController extends AppController
 {
     public function initialize() {
         parent::initialize();
-        $this->Auth->allow(['token']);
+        $this->Auth->allow(['token', 'add']);
     }
     
     public function getAdmin() {        
