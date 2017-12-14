@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Cake\Filesystem\File;
 
 /**
  * Infos Controller
@@ -12,100 +13,123 @@ use App\Controller\AppController;
  */
 class InfosController extends AppController
 {
-
-    /**
-     * Index method
-     *
-     * @return \Cake\Http\Response|void
-     */
-    public function index()
-    {
-        $infos = $this->paginate($this->Infos);
-
-        $this->set(compact('infos'));
-        $this->set('_serialize', ['infos']);
+    public function initialize() {
+        parent::initialize();
+        $this->Auth->allow(['getDataMany', 'getData', 'getDataByData', 'add']);
     }
-
-    /**
-     * View method
-     *
-     * @param string|null $id Info id.
-     * @return \Cake\Http\Response|void
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
-    public function view($id = null)
-    {
-        $info = $this->Infos->get($id, [
-            'contain' => []
-        ]);
-
-        $this->set('info', $info);
-        $this->set('_serialize', ['info']);
-    }
-
+    
     /**
      * Add method
      *
-     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
+     * @return \Cake\Network\Response|null Redirects on successful add, renders view otherwise.
      */
-    public function add()
-    {
+    public function add() {
         $info = $this->Infos->newEntity();
         if ($this->request->is('post')) {
-            $info = $this->Infos->patchEntity($info, $this->request->getData());
-            if ($this->Infos->save($info)) {
-                $this->Flash->success(__('The info has been saved.'));
-
-                return $this->redirect(['action' => 'index']);
+            $info = $this->Infos->patchEntity($info, $this->request->data);
+            if ($this->Infos->save($info)) {       
+                $code = 200;
+                $message = 'La información fue guardada correctamente';
+            } else {
+                $message = 'La información no fue guardada correctamente';
             }
-            $this->Flash->error(__('The info could not be saved. Please, try again.'));
         }
-        $this->set(compact('info'));
-        $this->set('_serialize', ['info']);
+        $this->set(compact('info', 'message', 'code'));
+        $this->set('_serialize', ['info', 'message', 'code']);
     }
-
+    
     /**
-     * Edit method
+     * Save Many method
      *
-     * @param string|null $id Info id.
-     * @return \Cake\Http\Response|null Redirects on successful edit, renders view otherwise.
-     * @throws \Cake\Network\Exception\NotFoundException When record not found.
+     * @return \Cake\Network\Response|null Redirects on successful add, renders view otherwise.
      */
-    public function edit($id = null)
-    {
-        $info = $this->Infos->get($id, [
-            'contain' => []
-        ]);
-        if ($this->request->is(['patch', 'post', 'put'])) {
-            $info = $this->Infos->patchEntity($info, $this->request->getData());
-            if ($this->Infos->save($info)) {
-                $this->Flash->success(__('The info has been saved.'));
-
-                return $this->redirect(['action' => 'index']);
+    public function saveMany() {
+        if ($this->request->is('post')) {
+            $infos = $this->request->data;
+            foreach ($infos as $data => $value) {
+                $info = $this->Infos->find()->where(['dato' => $data])->first();
+                $info->value = $value;
+                $this->Infos->save($info);
             }
-            $this->Flash->error(__('The info could not be saved. Please, try again.'));
         }
-        $this->set(compact('info'));
-        $this->set('_serialize', ['info']);
+        $code = 200;
+        $message = 'El cliente fue guardado correctamente';
+        $this->set(compact('message', 'code'));
+        $this->set('_serialize', ['message', 'code']);
     }
 
     /**
-     * Delete method
+     * GetData method
      *
-     * @param string|null $id Info id.
-     * @return \Cake\Http\Response|null Redirects to index.
+     * @param string|null $data.
+     * @return \Cake\Network\Response|null
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function delete($id = null)
-    {
-        $this->request->allowMethod(['post', 'delete']);
-        $info = $this->Infos->get($id);
-        if ($this->Infos->delete($info)) {
-            $this->Flash->success(__('The info has been deleted.'));
-        } else {
-            $this->Flash->error(__('The info could not be deleted. Please, try again.'));
+    public function getData($data = null) {
+        $data = $this->request->params['data'];
+        
+        $value = $this->Infos->find()
+            ->where(['data' => $data])
+            ->first()->value;
+        
+        $this->set(compact('value'));
+        $this->set('_serialize', ['value']);
+    }
+    
+    /**
+     * GetDataMany method
+     *
+     * @param string|null $data.
+     * @return \Cake\Network\Response|null
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function getDataMany($data = null) {
+        $datas = $this->request->data;
+        $info = array();
+        
+        if ($this->request->is('post')) {
+            foreach ($datas as $data) {
+                $value = $this->Infos->find()
+                    ->where(['dato' => $data])
+                    ->first()->value;
+                $info[$data] = $value;
+            }
         }
+        
+        $this->set(compact('info'));
+        $this->set('_serialize', ['info']);
+    }
+    
+    public function getDataByData ($search = null) {
+        $search = $this->request->data;
+        
+        $infos = $this->Infos->find()
+            ->where(['Infos.dato in ' => $search]);
+        
+        $this->set(compact('infos'));
+        $this->set('_serialize', ['infos']);
+    }
+    
+    public function upload() { 
+        if ($this->request->is("post")) {
+            $imagen = $this->request->data["file"];
+            
+            $path_dst = WWW_ROOT . "img" . DS . "infos" . DS;
+            $ext = pathinfo($imagen['name'], PATHINFO_EXTENSION);
+            $filename = 'info-' . $this->Random->randomString() . '.' . $ext;
+           
+            $filename_src = $imagen["tmp_name"];
+            $file_src = new File($filename_src);
 
-        return $this->redirect(['action' => 'index']);
+            if ($file_src->copy($path_dst . $filename)) {
+                $code = 200;
+                $message = 'La imagen fue subida correctamente';
+            } else {
+                $message = "La imagen no fue subida con éxito";
+            }
+            
+            $this->set(compact("code", "message", "filename"));
+            $this->set("_serialize", ["message", "filename"]);
+        }
     }
 }
