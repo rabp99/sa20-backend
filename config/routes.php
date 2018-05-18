@@ -101,6 +101,8 @@ Router::scope('/', function ($routes) {
             ]
         ]
     ]);
+    $routes->resources('Posts');
+    $routes->resources('Categories');
     $routes->resources('Users', [
         'map' => [
             'getAdmin' => [
