@@ -89,13 +89,13 @@ class PostsTable extends Table
             ->allowEmpty('portada');
 
         $validator
-            ->dateTime('fecha_registro')
-            ->requirePresence('fecha_registro', 'create')
-            ->notEmpty('fecha_registro');
+            ->dateTime('fechaRegistro')
+            ->requirePresence('fechaRegistro', 'create')
+            ->notEmpty('fechaRegistro');
 
         $validator
-            ->dateTime('fecha_publicacion')
-            ->allowEmpty('fecha_publicacion');
+            ->dateTime('fechaPublicacion')
+            ->allowEmpty('fechaPublicacion');
 
         return $validator;
     }

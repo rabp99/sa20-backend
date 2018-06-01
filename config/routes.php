@@ -101,7 +101,14 @@ Router::scope('/', function ($routes) {
             ]
         ]
     ]);
-    $routes->resources('Posts');
+    $routes->resources('Posts', [
+        'map' => [
+            'previewPortada' => [
+                'action' => 'previewPortada',
+                'method' => 'POST'
+            ]
+        ]
+    ]);
     $routes->resources('Categories');
     $routes->resources('Users', [
         'map' => [
