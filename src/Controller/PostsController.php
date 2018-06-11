@@ -86,7 +86,7 @@ class PostsController extends AppController
         if ($this->request->is('post')) {
             $post = $this->Posts->newEntity($this->request->getData());
             
-            if ($post->portada) {
+            if ($this->request->getData('changed')) {
                 $path_src = WWW_ROOT . "tmp" . DS;
                 $file_src = new File($path_src . $post->portada);
             
@@ -108,5 +108,12 @@ class PostsController extends AppController
         
         $this->set(compact('post', 'message', 'code', 'errors'));
         $this->set('_serialize', ['post', 'message', 'code', 'errors']);
+    }
+    
+    public function view($id) {
+        $post = $this->Posts->get($id);
+        
+        $this->set(compact('post'));
+        $this->set('_serialize', ['post']);
     }
 }
