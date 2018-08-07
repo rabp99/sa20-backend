@@ -106,6 +106,10 @@ Router::scope('/', function ($routes) {
             'previewPortada' => [
                 'action' => 'previewPortada',
                 'method' => 'POST'
+            ],
+            'getLasts/:cantidad' => [
+                'action' => 'getLasts',
+                'method' => 'GET'
             ]
         ]
     ]);

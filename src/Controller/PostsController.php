@@ -11,7 +11,11 @@ use Cake\Filesystem\File;
  */
 class PostsController extends AppController
 {
-
+    public function initialize() {
+        parent::initialize();
+        $this->Auth->allow(['getLasts']);
+    }
+    
     /**
      * Index method
      *
@@ -115,5 +119,13 @@ class PostsController extends AppController
         
         $this->set(compact('post'));
         $this->set('_serialize', ['post']);
+    }
+    
+    public function getLasts() {
+        $cantidad = $this->request->getParam("cantidad");
+        $posts = $this->Posts->find()->where(["estado_id" => 1])->limit($cantidad)->orderAsc("fechaRegistro");
+        
+        $this->set(compact('posts'));
+        $this->set('_serialize', ['posts']);
     }
 }
