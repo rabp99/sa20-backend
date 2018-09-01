@@ -110,6 +110,10 @@ Router::scope('/', function ($routes) {
             'getLasts/:cantidad' => [
                 'action' => 'getLasts',
                 'method' => 'GET'
+            ],
+            'getMasVistos/:cantidad' => [
+                'action' => 'getMasVistos',
+                'method' => 'GET'
             ]
         ]
     ]);

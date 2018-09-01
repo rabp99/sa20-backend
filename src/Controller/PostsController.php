@@ -13,7 +13,7 @@ class PostsController extends AppController
 {
     public function initialize() {
         parent::initialize();
-        $this->Auth->allow(['getLasts']);
+        $this->Auth->allow(['getLasts', 'getMasVistos']);
     }
     
     /**
@@ -123,7 +123,15 @@ class PostsController extends AppController
     
     public function getLasts() {
         $cantidad = $this->request->getParam("cantidad");
-        $posts = $this->Posts->find()->where(["estado_id" => 1])->limit($cantidad)->orderAsc("fechaRegistro");
+        $posts = $this->Posts->find()->where(["estado_id" => 1])->limit($cantidad)->orderDesc("fechaPublicacion");
+        
+        $this->set(compact('posts'));
+        $this->set('_serialize', ['posts']);
+    }
+    
+    public function getMasVistos() {
+        $cantidad = $this->request->getParam("cantidad");
+        $posts = $this->Posts->find()->where(["estado_id" => 1])->limit($cantidad)->orderDesc("vistos");
         
         $this->set(compact('posts'));
         $this->set('_serialize', ['posts']);
