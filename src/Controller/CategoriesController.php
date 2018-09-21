@@ -18,15 +18,35 @@ class CategoriesController extends AppController
      *
      * @return \Cake\Http\Response|void
      */
-    public function index()
-    {
+    public function index() {
+        $estado_id = $this->request->query('estado_id');
+        $text = $this->request->query('text');
+        $items_per_page = $this->request->query('items_per_page');
+        
         $this->paginate = [
-            'contain' => ['Estados']
+            'limit' => $items_per_page
         ];
-        $categories = $this->paginate($this->Categories);
-
-        $this->set(compact('categories'));
-        $this->set('_serialize', ['categories']);
+        
+        $query = $this->Categories->find()
+            ->order(['Categories.id' => 'ASC']);
+        
+        if ($text) {
+            $query->where(['Categories.descripcion LIKE' => '%' . $text . '%']);
+        }
+        
+        if ($estado_id) {
+            $query->where(['Categories.estado_id' => $estado_id]);
+        }
+        
+        $categories = $this->paginate($query);
+        $paginate = $this->request->param('paging')['Categories'];
+        $pagination = [
+            'totalItems' => $paginate['count'],
+            'itemsPerPage' =>  $paginate['perPage']
+        ];
+        
+        $this->set(compact('categories', 'pagination'));
+        $this->set('_serialize', ['categories', 'pagination']);
     }
 
     /**
