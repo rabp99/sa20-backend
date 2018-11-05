@@ -15,7 +15,51 @@ class InfosController extends AppController
 {
     public function initialize() {
         parent::initialize();
-        $this->Auth->allow(['getDataMany', 'getData', 'getDataByData', 'add']);
+        $this->Auth->allow(['getMany', 'indexAdmin']);
+    }
+    
+    /**
+     * Get Many
+     *
+     * @return \Cake\Network\Response|null Redirects on successful add, renders view otherwise.
+     */
+    public function getMany($descripciones = null) {
+        $descripciones = $this->request->data;
+        $infos = array();
+        
+        if ($this->request->is('post')) {
+            foreach ($descripciones as $descripcion) {
+                $valor = $this->Infos->find()
+                    ->where(['descripcion' => $descripcion])
+                    ->first()->valor;
+                $infos[$descripcion] = $valor;
+            }
+        }
+        
+        $this->set(compact('infos'));
+        $this->set('_serialize', ['infos']);
+    }
+    
+    /**
+     * Index method
+     *
+     * @return \Cake\Http\Response|void
+     */
+    public function indexAdmin($descripciones = null) {
+        $descripciones = $this->request->data;
+        $infos = array();
+        
+        if ($this->request->is('post')) {
+            foreach ($descripciones as $descripcion) {
+                $info = $this->Infos->find()
+                    ->where(['descripcion' => $descripcion])
+                    ->first();
+                $infos[] = $info;
+            }
+        }
+        
+        $this->set(compact('infos'));
+        $this->set('_serialize', ['infos']);
     }
     
     /**
@@ -24,104 +68,41 @@ class InfosController extends AppController
      * @return \Cake\Network\Response|null Redirects on successful add, renders view otherwise.
      */
     public function add() {
-        $info = $this->Infos->newEntity();
         if ($this->request->is('post')) {
-            $info = $this->Infos->patchEntity($info, $this->request->data);
-            if ($this->Infos->save($info)) {       
+            $info = $this->Infos->newEntity($this->request->getData());
+            
+            if ($info->tipo == 'image' && $info->changed == true) {
+                $pathSrc = WWW_ROOT . "tmp" . DS;
+                $fileSrc = new File($pathSrc . $info->valor);
+             
+                $pathDst = WWW_ROOT . 'img' . DS . 'infos' . DS;
+                $info->valor = $this->Random->randomFileName($pathDst, $info->descripcion . '-', $fileSrc->ext());
+                
+                $fileSrc->copy($pathDst . $info->valor);
+            }
+            
+            if ($this->Infos->save($info)) {
                 $code = 200;
                 $message = 'La información fue guardada correctamente';
             } else {
                 $message = 'La información no fue guardada correctamente';
             }
         }
+        
         $this->set(compact('info', 'message', 'code'));
         $this->set('_serialize', ['info', 'message', 'code']);
     }
-    
-    /**
-     * Save Many method
-     *
-     * @return \Cake\Network\Response|null Redirects on successful add, renders view otherwise.
-     */
-    public function saveMany() {
-        if ($this->request->is('post')) {
-            $infos = $this->request->data;
-            foreach ($infos as $data => $value) {
-                $info = $this->Infos->find()->where(['dato' => $data])->first();
-                $info->value = $value;
-                $this->Infos->save($info);
-            }
-        }
-        $code = 200;
-        $message = 'El cliente fue guardado correctamente';
-        $this->set(compact('message', 'code'));
-        $this->set('_serialize', ['message', 'code']);
-    }
-
-    /**
-     * GetData method
-     *
-     * @param string|null $data.
-     * @return \Cake\Network\Response|null
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
-    public function getData($data = null) {
-        $data = $this->request->params['data'];
-        
-        $value = $this->Infos->find()
-            ->where(['data' => $data])
-            ->first()->value;
-        
-        $this->set(compact('value'));
-        $this->set('_serialize', ['value']);
-    }
-    
-    /**
-     * GetDataMany method
-     *
-     * @param string|null $data.
-     * @return \Cake\Network\Response|null
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
-    public function getDataMany($data = null) {
-        $datas = $this->request->data;
-        $info = array();
-        
-        if ($this->request->is('post')) {
-            foreach ($datas as $data) {
-                $value = $this->Infos->find()
-                    ->where(['dato' => $data])
-                    ->first()->value;
-                $info[$data] = $value;
-            }
-        }
-        
-        $this->set(compact('info'));
-        $this->set('_serialize', ['info']);
-    }
-    
-    public function getDataByData ($search = null) {
-        $search = $this->request->data;
-        
-        $infos = $this->Infos->find()
-            ->where(['Infos.dato in ' => $search]);
-        
-        $this->set(compact('infos'));
-        $this->set('_serialize', ['infos']);
-    }
-    
-    public function upload() { 
+    public function previewImagen() {
         if ($this->request->is("post")) {
             $imagen = $this->request->data["file"];
             
-            $path_dst = WWW_ROOT . "img" . DS . "infos" . DS;
+            $pathDst = WWW_ROOT . "tmp" . DS;
             $ext = pathinfo($imagen['name'], PATHINFO_EXTENSION);
-            $filename = 'info-' . $this->Random->randomString() . '.' . $ext;
+            $filename = 'imagen-' . $this->Random->randomString() . '.' . $ext;
            
-            $filename_src = $imagen["tmp_name"];
-            $file_src = new File($filename_src);
-
-            if ($file_src->copy($path_dst . $filename)) {
+            $filenameSrc = $imagen["tmp_name"];
+            $fileSrc = new File($filenameSrc);
+            if ($fileSrc->copy($pathDst . $filename)) {
                 $code = 200;
                 $message = 'La imagen fue subida correctamente';
             } else {
@@ -129,7 +110,7 @@ class InfosController extends AppController
             }
             
             $this->set(compact("code", "message", "filename"));
-            $this->set("_serialize", ["message", "filename"]);
+            $this->set("_serialize", ["code", "message", "filename"]);
         }
     }
 }

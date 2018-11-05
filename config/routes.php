@@ -79,24 +79,16 @@ Router::scope('/', function ($routes) {
     $routes->extensions(['json']);
     $routes->resources('Infos', [
         'map' => [
-            'saveMany' => [
-                'action' => 'saveMany',
+            'getMany' => [
+                'action' => 'getMany',
                 'method' => 'POST'
             ],
-            'getData/:data' => [
-                'action' => 'getData',
-                'method' => 'GET'
-            ],
-            'getDataMany' => [
-                'action' => 'getDataMany',
+            'indexAdmin' => [
+                'action' => 'indexAdmin',
                 'method' => 'POST'
             ],
-            'getDataByData' => [
-                'action' => 'getDataByData',
-                'method' => 'POST'
-            ],
-            'upload' => [
-                'action' => 'upload',
+            'previewImagen' => [
+                'action' => 'previewImagen',
                 'method' => 'POST'
             ]
         ]
