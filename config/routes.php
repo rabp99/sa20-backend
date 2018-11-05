@@ -117,7 +117,14 @@ Router::scope('/', function ($routes) {
             ]
         ]
     ]);
-    $routes->resources('Categories');
+    $routes->resources('Categories', [
+        'map' => [
+            'previewPortada' => [
+                'action' => 'previewPortada',
+                'method' => 'POST'
+            ]
+        ]
+    ]);
     $routes->resources('Users', [
         'map' => [
             'getAdmin' => [

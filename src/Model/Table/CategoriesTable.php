@@ -28,10 +28,10 @@ class CategoriesTable extends Table
      * @param array $config The configuration for the Table.
      * @return void
      */
-    public function initialize(array $config)
-    {
+    public function initialize(array $config) {
         parent::initialize($config);
-
+        
+        $this->addBehavior('Burzum/Imagine.Imagine');
         $this->setTable('categories');
         $this->setDisplayField('descripcion');
         $this->setPrimaryKey('id');
@@ -76,10 +76,43 @@ class CategoriesTable extends Table
      * @param \Cake\ORM\RulesChecker $rules The rules object to be modified.
      * @return \Cake\ORM\RulesChecker
      */
-    public function buildRules(RulesChecker $rules)
-    {
+    public function buildRules(RulesChecker $rules) {
         $rules->add($rules->existsIn(['estado_id'], 'Estados'));
 
         return $rules;
+    }
+    
+     public function afterSave($event, $entity, $options) {
+        $imageOperationsLarge = [
+            'thumbnail' => [
+                'height' => 800,
+                'width' => 800
+            ],
+        ];
+        $imageOperationsSmall = [
+            'thumbnail' => [
+                'height' => 400,
+                'width' => 400
+            ],
+        ];
+        
+        $path = WWW_ROOT . "img". DS . 'categories' . DS;
+        
+        if ($entity->portada) {
+            $ext = pathinfo($entity->portada, PATHINFO_EXTENSION);
+            $filenameBase = basename($entity->portada, '.' . $ext);
+            if (file_exists($path . $entity->portada)) {
+                $this->processImage($path . $entity->portada,
+                    $path . $filenameBase . '_large.' . $ext,
+                    [],
+                    $imageOperationsLarge
+                );
+                $this->processImage($path . $entity->portada,
+                    $path . $filenameBase . '_small.' . $ext,
+                    [],
+                    $imageOperationsSmall
+                );
+            }
+        }
     }
 }

@@ -26,8 +26,6 @@ class Category extends Entity
      * @var array
      */
     protected $_accessible = [
-        'descripcion' => true,
-        'portada' => true,
-        'estado' => true
+        '*' => true
     ];
 }

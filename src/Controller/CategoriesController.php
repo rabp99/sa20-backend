@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Cake\Filesystem\File;
 
 /**
  * Categories Controller
@@ -71,66 +72,58 @@ class CategoriesController extends AppController
      *
      * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
      */
-    public function add()
-    {
+    public function add() {
         $category = $this->Categories->newEntity();
+        
         if ($this->request->is('post')) {
             $category = $this->Categories->patchEntity($category, $this->request->getData());
-            if ($this->Categories->save($category)) {
-                $this->Flash->success(__('The category has been saved.'));
-
-                return $this->redirect(['action' => 'index']);
+            
+            if ($category->portada) {
+                $pathSrc = WWW_ROOT . "tmp" . DS;
+                $fileSrc = new File($pathSrc . $category->portada);
+             
+                $pathDst = WWW_ROOT . 'img' . DS . 'categories' . DS;
+                $category->portada= $this->Random->randomFileName($pathDst, 'category-', $fileSrc->ext());
+                
+                $fileSrc->copy($pathDst . $category->portada);
             }
-            $this->Flash->error(__('The category could not be saved. Please, try again.'));
+            
+            if ($this->Categories->save($category)) {
+                $code = 200;
+                $message = 'La categoría fue guardado correctamente';
+            } else {
+                $message = 'La categoría no fue guardado correctamente';
+            }
         }
-        $estados = $this->Categories->Estados->find('list', ['limit' => 200]);
-        $this->set(compact('category', 'estados'));
-        $this->set('_serialize', ['category']);
+        
+        $this->set(compact('category', 'message', 'code'));
+        $this->set('_serialize', ['category', 'message', 'code']);
     }
 
     /**
-     * Edit method
+     * Preview Portada method
      *
-     * @param string|null $id Category id.
-     * @return \Cake\Http\Response|null Redirects on successful edit, renders view otherwise.
-     * @throws \Cake\Network\Exception\NotFoundException When record not found.
+     * @return \Cake\Http\Response|null
      */
-    public function edit($id = null)
-    {
-        $category = $this->Categories->get($id, [
-            'contain' => []
-        ]);
-        if ($this->request->is(['patch', 'post', 'put'])) {
-            $category = $this->Categories->patchEntity($category, $this->request->getData());
-            if ($this->Categories->save($category)) {
-                $this->Flash->success(__('The category has been saved.'));
-
-                return $this->redirect(['action' => 'index']);
+    public function previewPortada() {
+        if ($this->request->is("post")) {
+            $portada = $this->request->data["file"];
+            
+            $pathDst = WWW_ROOT . "tmp" . DS;
+            $ext = pathinfo($portada['name'], PATHINFO_EXTENSION);
+            $filename = 'category-' . $this->Random->randomString() . '.' . $ext;
+            
+            $filenameSrc = $portada["tmp_name"];
+            $fileSrc = new File($filenameSrc);
+            if ($fileSrc->copy($pathDst . $filename)) {
+                $code = 200;
+                $message = 'La portada fue subida correctamente';
+            } else {
+                $message = "La portada no fue subida con éxito";
             }
-            $this->Flash->error(__('The category could not be saved. Please, try again.'));
+            
+            $this->set(compact("code", "message", "filename"));
+            $this->set("_serialize", ["message", "filename"]);
         }
-        $estados = $this->Categories->Estados->find('list', ['limit' => 200]);
-        $this->set(compact('category', 'estados'));
-        $this->set('_serialize', ['category']);
-    }
-
-    /**
-     * Delete method
-     *
-     * @param string|null $id Category id.
-     * @return \Cake\Http\Response|null Redirects to index.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
-    public function delete($id = null)
-    {
-        $this->request->allowMethod(['post', 'delete']);
-        $category = $this->Categories->get($id);
-        if ($this->Categories->delete($category)) {
-            $this->Flash->success(__('The category has been deleted.'));
-        } else {
-            $this->Flash->error(__('The category could not be deleted. Please, try again.'));
-        }
-
-        return $this->redirect(['action' => 'index']);
     }
 }
