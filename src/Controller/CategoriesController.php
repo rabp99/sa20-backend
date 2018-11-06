@@ -57,13 +57,10 @@ class CategoriesController extends AppController
      * @return \Cake\Http\Response|void
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function view($id = null)
-    {
-        $category = $this->Categories->get($id, [
-            'contain' => ['Estados']
-        ]);
+    public function view($id = null) {
+        $category = $this->Categories->get($id);
 
-        $this->set('category', $category);
+        $this->set(compact('category'));
         $this->set('_serialize', ['category']);
     }
 
@@ -90,14 +87,16 @@ class CategoriesController extends AppController
             
             if ($this->Categories->save($category)) {
                 $code = 200;
-                $message = 'La categoría fue guardado correctamente';
+                $message = 'La categoría fue guardada correctamente';
             } else {
-                $message = 'La categoría no fue guardado correctamente';
+                $errors = $category->errors();
+                $code = 500;
+                $message = 'La categoría no fue guardada correctamente';
             }
         }
         
-        $this->set(compact('category', 'message', 'code'));
-        $this->set('_serialize', ['category', 'message', 'code']);
+        $this->set(compact('category', 'message', 'code', 'errors'));
+        $this->set('_serialize', ['category', 'message', 'code', 'errors']);
     }
 
     /**

@@ -48,8 +48,7 @@ class CategoriesTable extends Table
      * @param \Cake\Validation\Validator $validator Validator instance.
      * @return \Cake\Validation\Validator
      */
-    public function validationDefault(Validator $validator)
-    {
+    public function validationDefault(Validator $validator) {
         $validator
             ->integer('id')
             ->allowEmpty('id', 'create');
@@ -59,12 +58,6 @@ class CategoriesTable extends Table
             ->maxLength('descripcion', 30)
             ->requirePresence('descripcion', 'create')
             ->notEmpty('descripcion');
-
-        $validator
-            ->scalar('portada')
-            ->maxLength('portada', 60)
-            ->requirePresence('portada', 'create')
-            ->notEmpty('portada');
 
         return $validator;
     }
@@ -82,7 +75,7 @@ class CategoriesTable extends Table
         return $rules;
     }
     
-     public function afterSave($event, $entity, $options) {
+    public function afterSave($event, $entity, $options) {
         $imageOperationsLarge = [
             'thumbnail' => [
                 'height' => 800,
