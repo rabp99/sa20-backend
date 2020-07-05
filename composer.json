@@ -12,7 +12,8 @@
         "cakephp/plugin-installer": "~1.0",
         "josegonzalez/dotenv": "2.*",
         "admad/cakephp-jwt-auth": "^2.0",
-        "burzum/cakephp-imagine-plugin": "^2.1"
+        "burzum/cakephp-imagine-plugin": "^2.1",
+        "fzaninotto/faker": "^1.9"
     },
     "require-dev": {
         "psy/psysh": "@stable",
