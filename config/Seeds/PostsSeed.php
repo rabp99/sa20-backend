@@ -16,11 +16,20 @@ class PostsSeed extends AbstractSeed
      *
      * @return void
      */
-    public function run()
-    {
+    public function run() {
+        $faker = Faker\Factory::create();
         $data = [];
-
-        $table = $this->table('posts');
+        
+        for ($i = 0; $i < 200; $i++) {
+            $data[] = [
+                'user_id' => $faker->text(30),
+                'resumen' => $faker->text(60),
+                'portada' => $faker->text(60),
+                'estado_id' => 1
+            ];
+        }
+        
+        $table = $this->table('categories');
         $table->insert($data)->save();
     }
 }
