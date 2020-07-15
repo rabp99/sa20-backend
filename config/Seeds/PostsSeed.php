@@ -22,14 +22,22 @@ class PostsSeed extends AbstractSeed
         
         for ($i = 0; $i < 200; $i++) {
             $data[] = [
-                'user_id' => $faker->text(30),
-                'resumen' => $faker->text(60),
+                'user_id' => $faker->numberBetween(2, 90),
+                'category_id' => $faker->numberBetween(1, 100),
+                'title' => $faker->text(60),
+                'subtitle' => $faker->text(180),
+                'resumen' => $faker->text(300),
+                'body' => $faker->randomHtml(),
                 'portada' => $faker->text(60),
+                'fechaRegistro' => $faker->date(),
+                'fechaPublicacion' => $faker->date(),
+                'fechaModificacion' => $faker->date(),
+                'vistos' => $faker->numberBetween(100, 50000),
                 'estado_id' => 1
             ];
         }
         
-        $table = $this->table('categories');
+        $table = $this->table('posts');
         $table->insert($data)->save();
     }
 }

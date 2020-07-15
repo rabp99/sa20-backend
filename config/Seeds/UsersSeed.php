@@ -24,7 +24,7 @@ class UsersSeed extends AbstractSeed
             'nombres' => "admin",
             'apellidos' => "admin",
             'username' => "admin",
-            'password' => "$2y$10$ensUanaDuuxHdA8cnU3daODwIPXcp4nyt4s1aOtAQBNiFRiSmSCva",
+            'password' => '$2y$10$ensUanaDuuxHdA8cnU3daODwIPXcp4nyt4s1aOtAQBNiFRiSmSCva',
             'twitter' => "...",
             'estado_id' => 1
         ];
